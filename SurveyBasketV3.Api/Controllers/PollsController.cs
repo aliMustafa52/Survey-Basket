@@ -1,7 +1,10 @@
-﻿namespace SurveyBasketV3.Api.Controllers
+﻿using SurveyBasketV3.Api.Contracts.Polls;
+using SurveyBasketV3.Api.Mapping;
+
+namespace SurveyBasketV3.Api.Controllers
 {
 	[Route("api/[controller]")]  // /api/polls
-	[ApiController]
+	[ApiController]  // 1- Parameter Binding
 	public class PollsController(IPollService pollService) : ControllerBase
 	{
 		private readonly IPollService _pollService = pollService;
@@ -10,27 +13,28 @@
 		//[Route("")]// /api/polls
 		public IActionResult GetAll()
 		{
-			return Ok(_pollService.GetAll());
+			var polls = _pollService.GetAll();
+			return Ok(polls.MapToPollResponse());
 		}
 
 		[HttpGet("{id}")] // /api/polls/id
-		public IActionResult Get(int id)
+		public IActionResult Get([FromRoute] int id)
 		{
 			var poll = _pollService.Get(id);
 
-			return poll is null ? NotFound() : Ok(poll);
+			return poll is null ? NotFound() : Ok(poll.MapToPollResponse());
 		}
 
 		[HttpPost("")]
-		public IActionResult Add(Poll poll)
+		public IActionResult Add([FromBody] PollRequest request)
 		{
-			var newPoll= _pollService.Add(poll);
+			var newPoll= _pollService.Add(request.MapToPoll());
 
-			return CreatedAtAction(nameof(Get), new {id =newPoll.Id}, newPoll);
+			return CreatedAtAction(nameof(Get), new {id =newPoll.Id}, newPoll.MapToPollResponse());
 		}
 
 		[HttpPut("{id}")]
-		public IActionResult Update(int id,Poll poll)
+		public IActionResult Update([FromRoute] int id,[FromBody] Poll poll)
 		{
 			var isUpdated = _pollService.Update(id, poll);
 
@@ -38,7 +42,7 @@
 		}
 
 		[HttpDelete("{id}")]
-		public IActionResult Delete(int id)
+		public IActionResult Delete([FromRoute] int id)
 		{
 			var isDeleted = _pollService.Delete(id);
 			return isDeleted ? Ok() : NotFound();
