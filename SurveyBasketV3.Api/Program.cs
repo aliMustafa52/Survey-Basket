@@ -1,15 +1,11 @@
-using SurveyBasketV3.Api.Services;
+using SurveyBasketV3.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//call AddDependencies
+builder.Services.AddDependencies();
 
-builder.Services.AddScoped<IPollService,PollService>();
 
 var app = builder.Build();
 

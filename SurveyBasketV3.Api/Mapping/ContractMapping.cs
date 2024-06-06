@@ -15,12 +15,7 @@ namespace SurveyBasketV3.Api.Mapping
 
 		public static PollResponse MapToPollResponse(this Poll poll)
 		{
-			return new()
-			{
-				Id = poll.Id,
-				Title = poll.Title,
-				Description = poll.Description,
-			};
+			return new PollResponse(poll.Id, poll.Title, poll.Description);
 		}
 
 		public static IEnumerable<PollResponse> MapToPollResponse(this IEnumerable<Poll> polls) 
