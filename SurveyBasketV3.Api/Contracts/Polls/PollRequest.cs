@@ -7,6 +7,9 @@ namespace SurveyBasketV3.Api.Contracts.Polls
 	public record PollRequest
 		(
 			string Title,
-			string Description
+			string Summary,
+			bool IsPublished,
+			DateOnly StartsAt,
+			DateOnly EnndsAt
 		);
 }

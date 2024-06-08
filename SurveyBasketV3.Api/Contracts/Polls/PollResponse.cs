@@ -6,7 +6,10 @@ namespace SurveyBasketV3.Api.Contracts.Polls
 		(
 			int Id,
 			string Title,
-			string Description
+			string Summary,
+			bool IsPublished,
+			DateOnly StartsAt,
+			DateOnly EnndsAt
 		);
 
 }
