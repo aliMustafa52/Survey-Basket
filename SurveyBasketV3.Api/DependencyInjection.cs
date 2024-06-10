@@ -9,6 +9,7 @@ using SurveyBasketV3.Api.Authentication;
 using SurveyBasketV3.Api.Persistence;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SurveyBasketV3.Api
 {
@@ -24,7 +25,7 @@ namespace SurveyBasketV3.Api
 				.AddDbContextConfig(configuration)
 				.AddMapsterConfig()
 				.AddFluentValidationConfig()
-				.AddAuthConfig();
+				.AddAuthConfig(configuration);
 
 			//add my services
 			services.AddScoped<IPollService, PollService>();
@@ -66,14 +67,25 @@ namespace SurveyBasketV3.Api
 				.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 			return services;
 		}
-		private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+		private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
 		{
-			//single instance throuhout the project
-			services.AddSingleton<IJwtProvider, JwtProvider>();
-
 			// add identity UserManager and IdentityRole
 			services.AddIdentity<ApplicationUser, IdentityRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>();
+			//single instance throuhout the project
+			services.AddSingleton<IJwtProvider, JwtProvider>();
+
+			// link JwtOptions class with configuration Jwt
+			//services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+			services.AddOptions<JwtOptions>()
+				.BindConfiguration(JwtOptions.SectionName)
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+
+
+			//to use JwtOptions here
+			var jwtSettings =configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>(); 
 
 			services
 				.AddAuthentication(options =>
@@ -90,9 +102,9 @@ namespace SurveyBasketV3.Api
 						ValidateIssuer = true,
 						ValidateAudience = true,
 						ValidateLifetime = true,
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ed3B6NzKG7jgvT2jZB6OPjm5m1EnmL2i")),
-						ValidIssuer = "SurveyBasket",
-						ValidAudience = "SurveyBasket Users"
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+						ValidIssuer = jwtSettings?.Issuer,
+						ValidAudience = jwtSettings?.Audience,
 					};
 				});
 
