@@ -8,7 +8,6 @@ namespace SurveyBasketV3.Api.Contracts.Polls
 		(
 			string Title,
 			string Summary,
-			bool IsPublished,
 			DateOnly StartsAt,
 			DateOnly EnndsAt
 		);
