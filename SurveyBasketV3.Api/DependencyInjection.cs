@@ -20,6 +20,14 @@ namespace SurveyBasketV3.Api
 			// Add services to the container.
 			services.AddControllers();
 
+			//Add Cors
+			services.AddCors(options =>
+			options.AddDefaultPolicy(builder => builder
+											.AllowAnyMethod()
+											.AllowAnyHeader()
+											.AllowAnyOrigin()
+			));
+
 			services
 				.AddSwaggerConfig()
 				.AddDbContextConfig(configuration)
