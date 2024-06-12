@@ -1,5 +1,4 @@
-﻿
-using SurveyBasketV3.Api.Persistence;
+﻿using SurveyBasketV3.Api.Persistence;
 
 namespace SurveyBasketV3.Api.Services
 {
@@ -7,28 +6,41 @@ namespace SurveyBasketV3.Api.Services
 	{
 		private readonly ApplicationDbContext _context = context;
 
-		public async Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken = default) =>
-						await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
+		public async Task<IEnumerable<PollResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+		{
+			var polls = await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
+			return polls.Adapt<IEnumerable<PollResponse>>();
+		}
+						
 
 		
-		public async Task<Poll?> GetAsync(int id, CancellationToken cancellationToken = default)
+		public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default)
 		{
-			return await _context.Polls.FindAsync(id, cancellationToken);
+			var poll = await _context.Polls.FindAsync(id, cancellationToken);
+
+			return poll is null 
+					? Result.Failure<PollResponse>(PollErrors.PollNotFound)
+					: Result.Success(poll.Adapt<PollResponse>());
 		}
 		
-		public async Task<Poll> AddAsync(Poll poll, CancellationToken cancellationToken = default)
+		public async Task<PollResponse> AddAsync(PollRequest pollRequest, CancellationToken cancellationToken = default)
 		{
+			var poll = pollRequest.Adapt<Poll>();
+
 			await _context.Polls.AddAsync(poll,cancellationToken);
 			await _context.SaveChangesAsync(cancellationToken);
 
-			return poll;
+			return poll.Adapt<PollResponse>();
 		}
 		
-		public async Task<bool> UpdateAsync(int id,Poll poll, CancellationToken cancellationToken = default) 
+		public async Task<Result> UpdateAsync(int id,PollRequest pollRequest, CancellationToken cancellationToken = default) 
 		{
-			var currentPoll= await GetAsync(id,cancellationToken);
+			var currentPoll = await _context.Polls.FindAsync(id,cancellationToken);
+
 			if (currentPoll is null)
-				return false;
+				return Result.Failure(PollErrors.PollNotFound);
+
+			var poll = pollRequest.Adapt<Poll>();
 
 			currentPoll.Title = poll.Title;
 			currentPoll.Summary = poll.Summary;
@@ -36,33 +48,32 @@ namespace SurveyBasketV3.Api.Services
 			currentPoll.EnndsAt = poll.EnndsAt;
 			currentPoll.IsPublished = poll.IsPublished;
 
-			_context.Polls.Update(currentPoll);
 			await _context.SaveChangesAsync(cancellationToken);
 
-			return true;
+			return Result.Success();
 		}
 		
-		public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+		public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
 		{
-			var poll= await GetAsync(id,cancellationToken);
+			var poll= await _context.Polls.FindAsync(id,cancellationToken);
 			if (poll is null)
-				return false;
+				return Result.Failure(PollErrors.PollNotFound);
 
 			_context.Polls.Remove(poll);
 			await _context.SaveChangesAsync(cancellationToken);
 
-			return true;
+			return Result.Success();
 		}
-		public async Task<bool> TogglePublishAsync(int id, CancellationToken cancellationToken = default)
+		public async Task<Result> TogglePublishAsync(int id, CancellationToken cancellationToken = default)
 		{
-			var poll = await GetAsync(id,cancellationToken);
-			if(poll is null)
-				return false;
+			var poll = await _context.Polls.FindAsync(id, cancellationToken);
+			if (poll is null)
+				return Result.Failure(PollErrors.PollNotFound);
 
 			poll.IsPublished = !poll.IsPublished;
 			await _context.SaveChangesAsync(cancellationToken);
 
-			return true;
+			return Result.Success();
 		}
 
 

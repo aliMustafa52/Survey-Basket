@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SurveyBasketV3.Api.Authentication;
+using SurveyBasketV3.Api.Contracts.Authentication;
 
 namespace SurveyBasketV3.Api.Controllers
 {
@@ -15,7 +16,9 @@ namespace SurveyBasketV3.Api.Controllers
 		{
 			var authresponse = await _authService.GetTokenAsync(request.Email,request.Password, cancellationToken);
 
-			return authresponse is null ? BadRequest("Invalid Email/Password") : Ok(authresponse);
+			return authresponse.IsSuccess
+				? Ok(authresponse.Value)
+				: authresponse.ToProblem(StatusCodes.Status400BadRequest);
         }
 
 		[HttpPost("refresh")]
@@ -24,16 +27,20 @@ namespace SurveyBasketV3.Api.Controllers
 			var authresponse = await _authService.GetRefreshTokenAsync(refreshTokenRequest.Token
 						, refreshTokenRequest.RefreshToken, cancellationToken);
 
-			return authresponse is null ? BadRequest("Invalid Token") : Ok(authresponse);
+			return authresponse.IsSuccess
+				? Ok(authresponse.Value)
+				: authresponse.ToProblem(StatusCodes.Status400BadRequest);
 		}
 
 		[HttpPost("revoke-refresh-token")]
 		public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest refreshTokenRequest, CancellationToken cancellationToken)
 		{
-			var isRevoked = await _authService.RevokeRefreshTokenAsync(refreshTokenRequest.Token
+			var result = await _authService.RevokeRefreshTokenAsync(refreshTokenRequest.Token
 						, refreshTokenRequest.RefreshToken, cancellationToken);
 
-			return isRevoked ? Ok() : BadRequest("Operation Failed");
+			return result.IsSuccess
+				? Ok()
+				: result.ToProblem(StatusCodes.Status400BadRequest);
 		}
 
 	}

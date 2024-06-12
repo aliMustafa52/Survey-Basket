@@ -12,3 +12,6 @@ global using System.Reflection;
 global using SurveyBasketV3.Api.Contracts.Authentication;
 global using SurveyBasketV3.Api.Entities;
 global using SurveyBasketV3.Api.Services;
+global using SurveyBasketV3.Api.Abstractions;
+global using SurveyBasketV3.Api.Errors;
+global using SurveyBasketV3.Api.Contracts.Polls;
