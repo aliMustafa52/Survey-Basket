@@ -9,10 +9,22 @@ namespace SurveyBasketV3.Api.Persistence
 		private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
 		public DbSet<Poll> Polls {  get; set; }
+		public DbSet<Question> Questions { get; set; }
+		public DbSet<Answer> Answers { get; set; }
+		public DbSet<Vote> Votes { get; set; }
+		public DbSet<VoteAnswer> VoteAnswers { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+			var cascadeFKs = modelBuilder.Model
+								.GetEntityTypes()
+								.SelectMany(t => t.GetForeignKeys())
+								.Where(FK => FK.DeleteBehavior ==DeleteBehavior.Cascade && !FK.IsOwnership);
+
+			foreach (var fk in cascadeFKs)
+				fk.DeleteBehavior = DeleteBehavior.Restrict;
 
 			base.OnModelCreating(modelBuilder);
 		}

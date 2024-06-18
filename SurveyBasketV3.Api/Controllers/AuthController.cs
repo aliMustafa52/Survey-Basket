@@ -14,11 +14,13 @@ namespace SurveyBasketV3.Api.Controllers
 		[HttpPost("")]
 		public async Task<IActionResult> Login([FromBody] LoginRequest request,CancellationToken cancellationToken)
 		{
+			//throw new InvalidOperationException();
+
 			var authresponse = await _authService.GetTokenAsync(request.Email,request.Password, cancellationToken);
 
 			return authresponse.IsSuccess
 				? Ok(authresponse.Value)
-				: authresponse.ToProblem(StatusCodes.Status400BadRequest);
+				: authresponse.ToProblem();
         }
 
 		[HttpPost("refresh")]
@@ -29,7 +31,7 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return authresponse.IsSuccess
 				? Ok(authresponse.Value)
-				: authresponse.ToProblem(StatusCodes.Status400BadRequest);
+				: authresponse.ToProblem();
 		}
 
 		[HttpPost("revoke-refresh-token")]
@@ -40,7 +42,7 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return result.IsSuccess
 				? Ok()
-				: result.ToProblem(StatusCodes.Status400BadRequest);
+				: result.ToProblem();
 		}
 
 	}

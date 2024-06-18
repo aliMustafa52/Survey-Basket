@@ -25,6 +25,14 @@ namespace SurveyBasketV3.Api.Controllers
 			return Ok(pollResponses);
 		}
 
+		[HttpGet("current")]
+		public async Task<IActionResult> GetCurrent(CancellationToken cancellationToken)
+		{
+			var pollResponses = await _pollService.GetCurrentAsync(cancellationToken);
+
+			return Ok(pollResponses);
+		}
+
 		[HttpGet("{id}")] // /api/polls/id
 		public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
 		{
@@ -32,15 +40,17 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return pollResponseResult.IsSuccess
 				? Ok(pollResponseResult.Value)
-				: pollResponseResult.ToProblem(StatusCodes.Status404NotFound);
+				: pollResponseResult.ToProblem();
 		}
 		
 		[HttpPost("")]
 		public async Task<IActionResult> Add([FromBody] PollRequest request,CancellationToken cancellationToken)
 		{
-			var newPoll= await _pollService.AddAsync(request, cancellationToken);
+			var pollResponseResult = await _pollService.AddAsync(request, cancellationToken);
 
-			return CreatedAtAction(nameof(Get), new {id =newPoll.Id}, newPoll.Adapt<PollResponse>());
+			return pollResponseResult.IsSuccess
+				? CreatedAtAction(nameof(Get), new { id = pollResponseResult.Value.Id }, pollResponseResult.Value)
+				: pollResponseResult.ToProblem();
 		}
 		
 		[HttpPut("{id}")]
@@ -50,7 +60,7 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return result.IsSuccess 
 				? NoContent() 
-				: result.ToProblem(StatusCodes.Status404NotFound);
+				: result.ToProblem();
 		}
 		
 		[HttpDelete("{id}")]
@@ -60,7 +70,7 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return result.IsSuccess 
 				? Ok() 
-				: result.ToProblem(StatusCodes.Status404NotFound);
+				: result.ToProblem();
 		}
 
 		[HttpPut("{id}/togglepublish")]
@@ -70,7 +80,7 @@ namespace SurveyBasketV3.Api.Controllers
 
 			return result.IsSuccess
 				? Ok()
-				: result.ToProblem(StatusCodes.Status404NotFound);
+				: result.ToProblem();
 		}
 	}
 }

@@ -9,5 +9,8 @@
 		public DateOnly StartsAt { get; set; }
 		public DateOnly EnndsAt { get; set; }
 
+		public ICollection<Question> Questions { get; set; } = [];
+		public ICollection<Vote> Votes { get; set; } = [];
+
 	}
 }
