@@ -28,6 +28,33 @@ namespace SurveyBasketV3.Api.Services
 			return Result.Success<IEnumerable<QuestionResponse>>(questionResponses);
 		}
 
+		public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
+		{
+			var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken);
+			if(hasVote)
+				return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.DublicatedVote);
+
+			var isPollExists = await _context.Polls.AnyAsync(x => x.Id == pollId && x.IsPublished && 
+								x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EnndsAt >= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
+			if(!isPollExists)
+				Result.Failure<IEnumerable<QuestionResponse>>(PollErrors.PollNotFound);
+
+			var questionResponses = await _context.Questions
+							.Where(x => x.PollId == pollId && x.IsActive)
+							.Include(x => x.Answers)
+							.Select(question => 
+								new QuestionResponse(
+									question.Id,question.Content,question.Answers
+									.Where(answer => answer.IsActive)
+									.Select(answer => new AnswerResponse(answer.Id,answer.Content))
+								)
+							)
+							.AsNoTracking()
+							.ToListAsync(cancellationToken);
+
+			return Result.Success<IEnumerable<QuestionResponse>>(questionResponses);
+		}
+
 		public async Task<Result<QuestionResponse>> GetAsync(int pollId, int questionId, CancellationToken cancellationToken = default)
 		{
 			var isExistingPoll = await _context.Polls.AnyAsync(x => x.Id == pollId, cancellationToken);

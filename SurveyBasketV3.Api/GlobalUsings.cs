@@ -16,3 +16,4 @@ global using SurveyBasketV3.Api.Services;
 global using SurveyBasketV3.Api.Abstractions;
 global using SurveyBasketV3.Api.Errors;
 global using SurveyBasketV3.Api.Contracts.Polls;
+global using SurveyBasketV3.Api.Extensions;

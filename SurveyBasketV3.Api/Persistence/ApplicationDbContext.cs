@@ -35,7 +35,7 @@ namespace SurveyBasketV3.Api.Persistence
 			var entries = ChangeTracker.Entries<AuditableEntity>(); 
 			foreach (var entityEntry in entries)
 			{
-				var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+				var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId()!;
 
 				if (entityEntry.State == EntityState.Added)
 				{

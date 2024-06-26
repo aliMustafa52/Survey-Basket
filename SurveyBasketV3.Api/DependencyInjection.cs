@@ -39,6 +39,7 @@ namespace SurveyBasketV3.Api
 			services.AddScoped<IPollService, PollService>();
 			services.AddScoped<IAuthService, AuthService>();
 			services.AddScoped<IQuestionService, QuestionService>();
+			services.AddScoped<IVoteService, VoteService>();
 
 			//add GlobalExceptionHandler
 			services.AddExceptionHandler<GlobalExceptionHandler>();
