@@ -1,23 +1,16 @@
-﻿using Azure.Core;
-using FluentValidation;
-using Mapster;
-using MapsterMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using SurveyBasketV3.Api.Contracts.Polls;
-using SurveyBasketV3.Api.Mapping;
+﻿using Microsoft.AspNetCore.RateLimiting;
 
 namespace SurveyBasketV3.Api.Controllers
 {
 	[Route("api/[controller]")]  // /api/polls
 	[ApiController]  // 1- Parameter Binding , 2-Validations
-	[Authorize]
+	
 	public class PollsController(IPollService pollService) : ControllerBase
 	{
 		private readonly IPollService _pollService = pollService;
 
 		[HttpGet("")]
-		//[Route("")]// /api/polls
+		[HasPermisson(Permissions.GetPolls)]
 		public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
 		{
 			var pollResponses = await _pollService.GetAllAsync(cancellationToken);
@@ -26,6 +19,8 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 
 		[HttpGet("current")]
+		[Authorize(Roles = DefaultRoles.Member)]
+		[EnableRateLimiting(RateLimitPolicies.UserLimiter)]
 		public async Task<IActionResult> GetCurrent(CancellationToken cancellationToken)
 		{
 			var pollResponses = await _pollService.GetCurrentAsync(cancellationToken);
@@ -34,6 +29,7 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 
 		[HttpGet("{id}")] // /api/polls/id
+		[HasPermisson(Permissions.GetPolls)]
 		public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
 		{
 			var pollResponseResult = await _pollService.GetAsync(id, cancellationToken);
@@ -44,6 +40,7 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 		
 		[HttpPost("")]
+		[HasPermisson(Permissions.AddPolls)]
 		public async Task<IActionResult> Add([FromBody] PollRequest request,CancellationToken cancellationToken)
 		{
 			var pollResponseResult = await _pollService.AddAsync(request, cancellationToken);
@@ -54,6 +51,7 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 		
 		[HttpPut("{id}")]
+		[HasPermisson(Permissions.UpdatePolls)]
 		public async Task<IActionResult> Update([FromRoute] int id,[FromBody] PollRequest request, CancellationToken cancellationToken)
 		{
 			var result = await _pollService.UpdateAsync(id, request,cancellationToken);
@@ -64,6 +62,7 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 		
 		[HttpDelete("{id}")]
+		[HasPermisson(Permissions.DeletePolls)]
 		public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
 		{
 			var result = await _pollService.DeleteAsync(id,cancellationToken);
@@ -74,6 +73,7 @@ namespace SurveyBasketV3.Api.Controllers
 		}
 
 		[HttpPut("{id}/togglepublish")]
+		[HasPermisson(Permissions.UpdatePolls)]
 		public async Task<IActionResult> TogglePublish([FromRoute]int id,CancellationToken cancellationToken)
 		{
 			var result = await _pollService.TogglePublishAsync(id, cancellationToken);

@@ -12,6 +12,23 @@
 				.ToTable("RefreshTokens")
 				.WithOwner()
 				.HasForeignKey("UserId");
+
+			//SEED DEFAULT DATA (must seed id)
+			var passwordHasher = new PasswordHasher<ApplicationUser>();
+			builder.HasData(new ApplicationUser
+			{
+				Id = DefaultUsers.AdminId,
+				Email = DefaultUsers.AdminEmail,
+				NormalizedEmail = DefaultUsers.AdminEmail.ToUpper(),
+				UserName = DefaultUsers.AdminEmail,
+				NormalizedUserName = DefaultUsers.AdminEmail.ToUpper(),
+				FirstName = "Survey Basket",
+				LastName = "Admin",
+				SecurityStamp = DefaultUsers.AdminSecurityStamp,
+				ConcurrencyStamp = DefaultUsers.AdminConcurrencyStamp,
+				EmailConfirmed = true,
+				PasswordHash = passwordHasher.HashPassword(null!,DefaultUsers.AdminPassword)
+			});
 		}
 	}
 }
